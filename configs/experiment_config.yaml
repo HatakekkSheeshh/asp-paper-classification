@@ -1,0 +1,70 @@
+project:
+  name: kaggle-data-mining-team4
+  task: classify-paper-labels
+  metric: macro_f1
+
+paths:
+  train_raw: dataset_stage1/Stage_1_publcitrain.csv
+  test_raw: dataset_stage1/test (2).csv
+  interim_dir: data/interim
+  processed_dir: data/processed
+  submissions_dir: data/submissions
+  experiment_tracker: experiments/experiment_tracker.csv
+  submission_log: experiments/submission_log.csv
+  reports_dir: reports
+
+data:
+  id_column: id
+  target_column: Label
+  text_column: title
+  metadata_columns:
+    - venue
+    - year
+    - authors
+    - doi
+
+cv:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+
+text_baseline:
+  word_vectorizer:
+    analyzer: word
+    ngram_range: [1, 2]
+    min_df: 1
+    max_df: 1.0
+    sublinear_tf: true
+  char_vectorizer:
+    analyzer: char_wb
+    ngram_range: [3, 5]
+    min_df: 1
+    max_df: 1.0
+    sublinear_tf: true
+  logistic_regression:
+    C: 4.0
+    max_iter: 3000
+    class_weight: balanced
+  linear_svm:
+    C: 1.0
+    class_weight: balanced
+
+metadata_baseline:
+  numeric_features:
+    - year
+  derived_features:
+    - title_length
+    - author_count
+    - doi_length
+    - doi_prefix
+
+hybrid:
+  candidate_models:
+    - logistic_regression
+    - linear_svm
+    - catboost
+
+submission:
+  file_prefix: sub
+  id_column: id
+  target_column: Label

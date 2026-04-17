@@ -1,0 +1,4 @@
+run_id,owner,feature_set,model,cv_macro_f1,cv_std,public_lb,notes
+exp_001,M3,tfidf_title_word_1_2,logistic_regression,,,,"baseline scaffold"
+exp_002,M2,metadata_basic,catboost,,,,"venue year author_count doi"
+exp_003,M4,title_plus_metadata,linear_svm,,,,"hybrid candidate"

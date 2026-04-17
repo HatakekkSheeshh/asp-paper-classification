@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+
+# Generated data artifacts
+data/interim/*
+!data/interim/README.md
+data/processed/*
+!data/processed/README.md
+data/submissions/*
+!data/submissions/README.md
+reports/figures/*
+!reports/figures/README.md
+
+# OS
+Thumbs.db
+.DS_Store

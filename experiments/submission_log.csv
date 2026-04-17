@@ -1,0 +1,2 @@
+submission_id,owner,file_name,model_family,cv_macro_f1,public_lb,notes
+sub_001,M1,sub_v1_text_baseline.csv,text_baseline,,,"placeholder log row"
