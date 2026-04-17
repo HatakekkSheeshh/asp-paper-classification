@@ -8,7 +8,7 @@ Module này chứa phần tiền xử lý và feature engineering.
 - `metadata.py`: dựng bảng feature metadata cơ bản.
 - `text.py`: helper cho text series và TF-IDF vectorizer.
 
-## Ownership gợi ý
+## Cách dùng trong mô hình 4 branch
 
-- Member 2: metadata features
-- Member 3: text preprocessing và vectorizer tuning
+- Mỗi thành viên có thể chọn dùng một phần hoặc toàn bộ module này.
+- Không có ownership cố định; ai cũng có thể mở rộng text hoặc metadata features trên branch riêng.

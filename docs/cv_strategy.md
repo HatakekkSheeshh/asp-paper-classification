@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Đảm bảo mọi mô hình được so sánh công bằng theo đúng metric `Macro F1-score` của Kaggle.
+Giữ cho cuộc đua giữa các branch là **công bằng** và **so sánh được**.
 
 ## Quy ước mặc định
 
@@ -10,37 +10,50 @@
 - `n_splits = 5`
 - `shuffle = True`
 - `random_state = 42`
-- Giữ nguyên cùng một chiến lược split cho toàn bộ baseline, tuning và ensemble
+- Mọi branch dùng cùng một chiến lược split
 
-## Vì sao chọn như vậy
+## Vì sao phải khóa CV
 
-- Dataset nhỏ nên cần tận dụng nhiều dữ liệu train hơn hold-out đơn.
-- Bài toán có 5 lớp, phân bố hơi lệch nên cần stratify để giữ tỷ lệ nhãn giữa các fold.
-- Macro F1 nhạy với lớp yếu, vì vậy phải nhìn cả `mean` và `std`, không chỉ nhìn một fold.
+- Dataset nhỏ nên kết quả dễ dao động
+- Nếu mỗi người dùng một split khác nhau thì không thể so CV công bằng
+- Dù winner cuối cùng ưu tiên theo Kaggle score, nhóm vẫn cần CV để:
+  - kiểm tra branch đó có ổn định không
+  - tránh chọn nhầm một pipeline chỉ ăn may trên public leaderboard
 
-## Checklist trước khi báo cáo điểm CV
+## Checklist trước khi báo cáo kết quả
 
-- Đã dùng cùng một target column là `Label`.
-- Không có leakage từ nhãn hoặc feature hậu kiểm.
-- Không thay đổi split seed giữa các run khi chưa ghi log rõ ràng.
-- Báo cáo đủ:
+- Đã dùng đúng target column `Label`
+- Đã dùng cùng CV split với cả nhóm
+- Không có leakage
+- Có báo cáo:
   - `CV mean`
   - `CV std`
-  - mô tả feature set
-  - model và hyperparameter chính
+  - feature set
+  - model chính
+  - best submission tương ứng
 
-## Nguyên tắc chọn model
+## Nguyên tắc chọn model trong từng branch
 
-Ưu tiên theo thứ tự:
+Mỗi thành viên có thể chọn candidate cuối theo:
 
-1. Mean Macro F1 tốt
-2. Độ ổn định qua folds tốt
-3. Pipeline hợp lý và tái tạo được
-4. Public leaderboard chỉ dùng để tham khảo
+1. CV tốt nhất trên branch của mình
+2. Sau đó submit lên Kaggle để kiểm chứng
+3. Nếu Public LB tốt hơn baseline cũ thì giữ làm candidate chính
+
+## Nguyên tắc chọn winner toàn nhóm
+
+Ưu tiên:
+
+1. Public LB cao nhất
+2. Nếu chênh lệch rất nhỏ, xem thêm:
+   - CV mean
+   - CV std
+   - khả năng tái tạo
+   - độ sạch của pipeline
 
 ## Kiểm tra leakage nên làm sớm
 
 - Duplicate theo `title`
 - Duplicate theo `doi`
-- Cùng paper xuất hiện nhiều bản ghi
-- Feature được tạo sau khi đã nhìn test hoặc leaderboard
+- Một paper xuất hiện nhiều biến thể
+- Feature vô tình dùng thông tin ngoài train

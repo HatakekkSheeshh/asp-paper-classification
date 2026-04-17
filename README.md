@@ -1,13 +1,13 @@
 # Kaggle Data Mining Team 4
 
-Repo này là skeleton làm bài tập lớn Data Mining cho đề tài phân loại paper nghiên cứu ASP và các lĩnh vực liên quan. Mục tiêu chính của nhóm là tối ưu `Macro F1-score` trên Kaggle nhưng vẫn giữ được quy trình làm việc rõ ràng, dễ giải thích trong báo cáo và dễ phối hợp giữa 4 thành viên.
+Repo này là skeleton làm bài tập lớn Data Mining cho đề tài phân loại paper nghiên cứu ASP và các lĩnh vực liên quan. Cách làm hiện tại của nhóm là **4 thành viên tự làm full pipeline trên 4 branch riêng**, sau đó so điểm Kaggle để chọn ra branch mạnh nhất làm bài chính.
 
 ## Mục tiêu của repo
 
-- Có cấu trúc thư mục thống nhất để cả nhóm làm song song mà ít đụng nhau.
-- Có config, tracker thí nghiệm và guideline validation ngay từ đầu.
-- Có module `src/` đủ rõ để Member 2, 3, 4 nhận việc và code tiếp ngay.
-- Có notebook khung, report template và nơi lưu submission theo đúng roadmap.
+- Có cấu trúc thư mục chung để mọi branch bắt đầu từ cùng một nền.
+- Có config, tracker thí nghiệm và luật validation thống nhất.
+- Cho phép mỗi thành viên phát triển một pipeline độc lập, end-to-end.
+- Dễ tổng hợp kết quả để chọn winner branch và merge về `main`.
 
 ## Bắt đầu nhanh
 
@@ -22,40 +22,62 @@ pip install -r requirements.txt
    - `dataset_stage1/Stage_1_publcitrain.csv`
    - `dataset_stage1/test (2).csv`
 4. Xem config chung tại `configs/experiment_config.yaml`.
-5. Ghi log mọi lần chạy vào `experiments/experiment_tracker.csv`.
-6. Đọc `docs/cv_strategy.md` trước khi so sánh model.
+5. Đọc `docs/cv_strategy.md` và `docs/branching_strategy.md` trước khi bắt đầu branch riêng.
+6. Ghi log mọi lần chạy vào `experiments/experiment_tracker.csv`.
 
 ## Cấu trúc chính
 
 ```text
 .
-├── configs/              # config chung cho path, CV, baseline
-├── data/                 # nơi chuẩn hóa dữ liệu raw/interim/processed/submission
+├── configs/              # config chung cho data path, CV, baseline defaults
+├── data/                 # nơi chứa raw/interim/processed/submissions
 ├── dataset_stage1/       # dữ liệu gốc hiện có của nhóm
-├── docs/                 # roadmap, chiến lược CV, workflow cộng tác
+├── docs/                 # roadmap, CV strategy, branch battle strategy
 ├── experiments/          # tracker thí nghiệm và log submission
-├── notebooks/            # notebook khung theo từng giai đoạn
-├── reports/              # EDA, error analysis, final report
-├── src/                  # code package dùng chung cho cả nhóm
+├── notebooks/            # notebook khung
+├── reports/              # report template và error analysis
+├── src/                  # code package dùng chung làm điểm xuất phát
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
 
-## Phân chia ownership gợi ý
+## Cách nhóm đang làm việc
 
-- Member 1: `configs/`, `docs/`, `experiments/`, validation, final merge.
-- Member 2: `src/features/`, `notebooks/01_eda.ipynb`, `notebooks/03_metadata_features.ipynb`, `reports/eda_summary.md`.
-- Member 3: `src/features/text.py`, `src/models/baselines.py`, `notebooks/02_text_baseline.ipynb`.
-- Member 4: `src/models/hybrid.py`, `src/models/ensemble.py`, `src/evaluation/`, `notebooks/04_hybrid_models.ipynb`, `notebooks/05_ensemble_error_analysis.ipynb`.
+### Shared core
 
-## Quy ước làm việc
+Cả nhóm dùng chung:
 
-- Mỗi người làm trên một branch riêng.
-- Không so sánh model bằng leaderboard public một cách đơn lẻ.
-- Mọi run đều phải có `Run ID` trong tracker.
-- Dùng cùng một split CV để so sánh công bằng.
-- Submission đặt tên theo mẫu `sub_vX_<short_desc>.csv`.
+- cùng dataset
+- cùng metric `Macro F1`
+- cùng `StratifiedKFold`
+- cùng tracker/log
+- cùng format submission
+
+### Battle branches
+
+Mỗi người tạo và phát triển một branch riêng:
+
+- `battle/m1-full-pipeline`
+- `battle/m2-full-pipeline`
+- `battle/m3-full-pipeline`
+- `battle/m4-full-pipeline`
+
+Trên branch của mình, mỗi thành viên tự làm:
+
+- EDA nhanh
+- preprocessing
+- feature engineering
+- model training
+- CV evaluation
+- Kaggle submission
+
+## Quy tắc chọn hướng chính
+
+Ưu tiên:
+
+1. Public Kaggle score cao nhất
+2. Nếu điểm sát nhau, xem thêm CV mean/std và khả năng chạy lại pipeline
 
 ## Tài liệu nên đọc đầu tiên
 
@@ -63,13 +85,6 @@ pip install -r requirements.txt
 - `docs/cv_strategy.md`
 - `docs/branching_strategy.md`
 - `experiments/README.md`
-
-## Gợi ý workflow trong tuần đầu
-
-1. Member 1 khóa config path, CV strategy và tracker.
-2. Member 2 chạy EDA, thống kê missing, duplicate và feature hypothesis.
-3. Member 3 dựng text baseline TF-IDF + Logistic Regression / Linear SVM.
-4. Member 4 chuẩn bị pipeline hybrid, confusion matrix và ensemble skeleton.
 
 ## Trạng thái dữ liệu hiện tại
 

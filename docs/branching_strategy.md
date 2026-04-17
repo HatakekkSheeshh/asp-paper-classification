@@ -2,39 +2,57 @@
 
 ## Mục tiêu
 
-Giúp 4 thành viên làm song song mà ít conflict, dễ review và dễ merge.
+Hỗ trợ mô hình làm việc mới: **4 thành viên, 4 branch độc lập, 4 pipeline hoàn chỉnh**, sau đó chọn branch mạnh nhất để merge vào `main`.
 
 ## Quy ước branch
 
-- `main`: nhánh ổn định, chỉ chứa code đã review nhanh trong nhóm.
-- `feature/m1-validation`
-- `feature/m2-eda-metadata`
-- `feature/m3-text-baselines`
-- `feature/m4-hybrid-ensemble`
+- `main`: nhánh ổn định, chỉ chứa cấu trúc chung và pipeline đã được chọn cuối cùng
+- `battle/m1-full-pipeline`
+- `battle/m2-full-pipeline`
+- `battle/m3-full-pipeline`
+- `battle/m4-full-pipeline`
 
-Nếu có task nhỏ hơn, có thể thêm hậu tố:
-
-- `feature/m2-eda-metadata-title-length`
-- `feature/m4-hybrid-ensemble-voting`
+Trong giai đoạn “đấu branch”, mỗi người chủ yếu làm trên nhánh của mình, hạn chế merge chéo để tránh vô tình biến 4 hướng thành 1 hướng giống nhau.
 
 ## Quy ước commit message
 
-- `docs: update cv strategy`
-- `feat: add metadata feature builder`
-- `notebook: add text baseline experiments`
-- `report: draft eda summary`
-- `fix: align submission id order`
+- `feat: add text baseline pipeline`
+- `feat: add metadata features and catboost`
+- `tune: improve svm with char tfidf`
+- `report: summarize branch results`
+- `fix: align submission format`
 
-## Quy trình đề xuất
+## Workflow đề xuất
 
 1. Pull `main` mới nhất.
-2. Làm việc trên branch riêng.
-3. Cập nhật tracker thí nghiệm nếu có run mới.
-4. Tự kiểm tra notebook/code chạy được.
-5. Tạo pull request hoặc gửi diff cho Member 1 review.
-6. Merge vào `main` khi không làm hỏng cấu trúc chung.
+2. Checkout branch battle của mình.
+3. Tự phát triển full pipeline trên branch đó.
+4. Ghi run vào tracker, kèm `member` và `branch`.
+5. Tạo submission và ghi vào submission log.
+6. Chỉ review chéo ở mức góp ý, không merge lẫn nhau trong lúc đang thi nội bộ.
+7. Cuối kỳ, chọn winner branch rồi mới merge hoặc cherry-pick vào `main`.
 
-## Trách nhiệm merge
+## Quy tắc merge
 
-- Member 1 là người chốt merge cuối ngày hoặc trước mốc deliverable.
-- Nếu hai người sửa cùng một notebook, nên tách phần code chung sang `src/` để giảm conflict.
+- Không merge toàn bộ 4 branch vào `main`.
+- Chỉ merge:
+  - branch thắng cuộc
+  - hoặc một phần rất cụ thể từ branch khác nếu cả nhóm thống nhất lấy thêm ý tưởng
+- Nếu lấy ý tưởng từ branch thua, nên cherry-pick có chọn lọc thay vì trộn toàn bộ.
+
+## Tiêu chí chọn branch thắng
+
+Ưu tiên:
+
+1. Public Kaggle score
+2. CV Macro F1 và độ ổn định
+3. Pipeline có chạy lại được không
+4. Dễ trình bày trong báo cáo hay không
+
+## Trách nhiệm cuối kỳ
+
+- Member 1 hoặc người được nhóm giao sẽ:
+  - tổng hợp bảng kết quả
+  - xác nhận branch thắng
+  - merge vào `main`
+  - chuẩn hóa lại tài liệu nếu cần

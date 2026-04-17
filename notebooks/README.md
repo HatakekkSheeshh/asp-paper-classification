@@ -12,6 +12,7 @@ Notebook trong thư mục này được đặt theo thứ tự pipeline để c�
 
 ## Quy tắc sử dụng
 
+- Mỗi thành viên có thể dùng bất kỳ notebook nào làm điểm xuất phát cho branch của mình.
 - Notebook nên gọi code trong `src/` thay vì viết logic dài trực tiếp trong cell.
 - Giữ output cần thiết nhưng tránh commit output quá nặng.
 - Khi notebook đã tương đối ổn, chuyển logic tái sử dụng sang `src/`.

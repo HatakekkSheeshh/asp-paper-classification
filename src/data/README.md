@@ -7,6 +7,7 @@ Module này phụ trách đọc dữ liệu và tạo split validation dùng chu
 - `loading.py`: đọc train/test từ config.
 - `splits.py`: tạo `StratifiedKFold` và fold assignment.
 
-## Ownership gợi ý
+## Cách dùng trong mô hình 4 branch
 
-- Member 1 phụ trách review vì đây là nền tảng để mọi người dùng chung.
+- Đây là phần dùng chung cho tất cả branch.
+- Mỗi thành viên có thể giữ nguyên module này hoặc mở rộng trên branch của mình nếu cần.

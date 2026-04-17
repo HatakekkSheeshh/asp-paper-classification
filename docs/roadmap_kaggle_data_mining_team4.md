@@ -1,712 +1,458 @@
-# Roadmap plan cho bài tập lớn Data Mining (Kaggle competition)  
+# Roadmap plan cho bài tập lớn Data Mining (Kaggle competition)
 **Đề tài:** Phân loại paper nghiên cứu ASP và các lĩnh vực liên quan  
-**Mục tiêu:** Tối ưu **Macro F1-score** trên Kaggle đồng thời có quy trình làm việc rõ ràng, có thể giải thích được trong báo cáo/thuyết trình.
+**Mục tiêu mới:** Mỗi thành viên tự làm **full pipeline end-to-end trên 1 branch riêng**, sau đó so điểm Kaggle để chọn ra pipeline mạnh nhất làm bài chính của nhóm.
 
 ---
 
 ## 1) Tóm tắt bài toán
 
-Nhóm cần xây dựng mô hình dự đoán `Label` cho từng paper dựa trên dữ liệu metadata và text.  
-Theo file thực tế nhóm đang có ở stage 1:
+Nhóm cần xây dựng mô hình dự đoán `Label` cho từng paper dựa trên metadata và text.
+
+Theo dữ liệu stage 1 hiện có:
 
 - **Train:** 510 mẫu
 - **Test:** 86 mẫu
 - **Cột hiện có:** `title, venue, year, authors, doi, Label, id`
-- **Lưu ý quan trọng:** file thực tế **không có `abstract`**, nhưng lại có `doi`
-- **Thiếu dữ liệu:** `authors` bị thiếu một phần
-- **Metric:** **Macro F1-score** → cần quan tâm cân bằng giữa các lớp, không chỉ accuracy
+- **Lưu ý:** chưa có `abstract`, nhưng có `doi`
+- **Thiếu dữ liệu:** `authors` thiếu một phần
+- **Metric trên Kaggle:** **Macro F1-score**
 
-### Nhận định nhanh từ dữ liệu hiện tại
-- Số lớp: **5**
-- Phân bố label tương đối lệch nhẹ, chưa quá nặng:
-  - Label 1: 130
-  - Label 2: 103
-  - Label 3: 85
-  - Label 4: 89
-  - Label 5: 103
-- `venue` hiện có 2 giá trị chính: `iclp`, `kr`
-- Dataset nhỏ → rất phù hợp với:
-  - TF-IDF + model tuyến tính / boosting
-  - Feature engineering từ metadata
-  - Stacking / soft voting
-  - Cross-validation cẩn thận để tránh overfit leaderboard
+### Nhận định nhanh
 
----
+- Dataset nhỏ
+- Feature text hiện tại chủ yếu là `title`
+- `venue` chỉ có vài giá trị chính nên metadata không quá phức tạp
+- Codebase hiện tại còn ít nên chưa cần chia cứng người này giữ text, người kia giữ metadata
 
-## 2) Mục tiêu kỹ thuật của nhóm
+Vì vậy, chiến lược hợp lý hơn ở giai đoạn này là:
 
-### Mục tiêu bắt buộc
-1. Có pipeline sạch, reproducible
-2. Có ít nhất **3 baseline mạnh**
-3. Có **cross-validation chuẩn theo Macro F1**
-4. Có **ít nhất 1 mô hình kết hợp text + metadata**
-5. Có file submit đúng format
-6. Có báo cáo giải thích rõ:
-   - chọn feature nào
-   - tại sao chọn model đó
-   - so sánh các thử nghiệm
-   - phân tích lỗi
-
-### Mục tiêu điểm số
-- **Ngưỡng an toàn:** baseline chạy ổn, không lỗi, CV hợp lý
-- **Ngưỡng tốt:** có tuning + ensemble + error analysis
-- **Ngưỡng rất tốt:** có nhiều nhánh mô hình, blending hợp lý, báo cáo chặt chẽ, thuyết trình rõ insight
+1. Khóa luật chơi chung
+2. Để mỗi người tự làm một pipeline hoàn chỉnh trên branch riêng
+3. So kết quả công bằng
+4. Chọn pipeline thắng cuộc để phát triển thành bài nộp chính
 
 ---
 
-## 3) Chiến lược tổng thể để đạt kết quả tốt nhất
+## 2) Vì sao đổi chiến lược làm việc
 
-Vì dataset nhỏ và metric là Macro F1, chiến lược nên đi theo hướng:
+Kế hoạch cũ chia nhóm theo module kiểu:
 
-1. **Làm thật chắc EDA và validation trước**
-2. **Xây baseline nhanh** để có mốc so sánh
-3. **Tách 3 nhánh feature**
-   - Nhánh A: text từ `title`
-   - Nhánh B: metadata (`venue`, `year`, `authors`, `doi`)
-   - Nhánh C: hybrid = text + metadata
-4. **Thử nhiều model cổ điển nhưng mạnh cho text nhỏ**
-   - Logistic Regression
-   - Linear SVM
-   - Naive Bayes
-   - Random Forest / XGBoost / LightGBM / CatBoost (nếu encode hợp lý)
-5. **Tối ưu Macro F1 bằng cross-validation phân tầng**
-6. **Error analysis theo từng lớp**
-7. **Ensemble/blending** thay vì phụ thuộc 1 mô hình duy nhất
-8. **Giữ log thí nghiệm** để tránh làm lại, tránh “cảm giác model tốt”
+- người A làm validation
+- người B làm metadata
+- người C làm text
+- người D làm ensemble
 
----
+Cách đó hợp với project lớn hoặc codebase đã đủ dày. Nhưng với dataset và code hiện tại còn gọn, cách chia đó có rủi ro:
 
-## 4) Phân chia vai trò cho 4 thành viên
+- mỗi người chỉ nắm một mảnh nhỏ của pipeline
+- phụ thuộc lẫn nhau nhiều nên chờ nhau
+- khó biết cách tiếp cận nào thật sự tốt nhất
+- dễ bị merge sớm một hướng chưa chắc là mạnh nhất
 
-Để tránh chồng chéo, mỗi người có **1 vai trò chính** và **1 vai trò phụ**.
+Kế hoạch mới ưu tiên:
+
+- tốc độ thử nghiệm
+- tính độc lập
+- cạnh tranh lành mạnh giữa 4 hướng làm
+- chọn winner dựa trên kết quả thật trên Kaggle
 
 ---
 
-### Thành viên 1 — Project Lead + Validation Owner
-**Vai trò chính**
-- Quản lý tiến độ
-- Thiết kế pipeline chung
-- Chịu trách nhiệm validation và rule nộp Kaggle
+## 3) Luật chơi chung bắt buộc cho cả nhóm
 
-**Nhiệm vụ chính**
-- Tạo repo / folder structure
-- Quy định cách đặt tên notebook, file submit, file log
-- Thiết kế `StratifiedKFold` cho Macro F1
-- Kiểm tra data leakage, duplicate, split strategy
-- Tổng hợp kết quả từ mọi người
-- Chọn final ensemble để submit
+Đây là phần phải **khóa cứng** để việc “đấu đầu” giữa các branch là công bằng.
 
-**Vai trò phụ**
-- Review code và merge branch
-- Chuẩn hóa format báo cáo/thuyết trình
+### Dữ liệu và metric
 
-**Deliverables**
-- `README.md`
-- `configs/`
-- `cv_strategy.md`
-- bảng tổng hợp experiment
-- final submission shortlist
+- Dùng cùng dataset stage 1
+- Cùng metric mục tiêu: `Macro F1`
+- Cùng format submit: `id,Label`
+- Không dùng dữ liệu ngoài nếu cả nhóm chưa thống nhất
 
----
+### Validation
 
-### Thành viên 2 — EDA + Data Cleaning + Metadata Features
-**Vai trò chính**
-- Phân tích dữ liệu
-- Xử lý dữ liệu thiếu, chuẩn hóa metadata
-- Tạo feature từ `authors`, `venue`, `year`, `doi`
+- Dùng cùng `StratifiedKFold`
+- `n_splits = 5`
+- `shuffle = True`
+- `random_state = 42`
+- Báo cáo cả `CV mean` và `CV std`
 
-**Nhiệm vụ chính**
-- Kiểm tra missing values, duplicates, outliers
-- Phân tích phân bố label
-- Phân tích title length, số author, năm xuất bản
-- Chuẩn hóa `authors`:
-  - số lượng tác giả
-  - author xuất hiện nhiều
-  - first author / last author
-- Feature từ `doi`:
-  - publisher prefix
-  - pattern journal/conference
-  - độ dài DOI
-- Encode `venue`, `year bin`, `author_count`
-- Làm báo cáo EDA có biểu đồ và insight
+### Kỷ luật thí nghiệm
 
-**Vai trò phụ**
-- Hỗ trợ Member 3/4 ghép metadata vào pipeline model
+- Mỗi run phải ghi vào tracker
+- Mỗi submission phải ghi vào submission log
+- Ghi rõ `member`, `branch`, `feature set`, `model`, `CV`, `Public LB`
+- Không chỉnh tay file submission
 
-**Deliverables**
-- `notebooks/eda.ipynb`
-- `src/features_metadata.py`
-- `reports/eda_summary.md`
+### Quy tắc chọn winner
+
+Ưu tiên theo thứ tự:
+
+1. **Public Kaggle score cao nhất**
+2. Nếu chênh lệch Public LB quá nhỏ, dùng thêm:
+   - CV Macro F1
+   - độ ổn định qua folds
+   - khả năng chạy lại pipeline
+3. Branch nào không tái tạo được hoặc submit sai format thì không được chọn, dù điểm tình cờ cao
 
 ---
 
-### Thành viên 3 — Text Modeling Owner
-**Vai trò chính**
-- Xử lý text và xây các model baseline / advanced cho `title`
+## 4) Cách tổ chức nhóm mới
 
-**Nhiệm vụ chính**
-- Tiền xử lý `title`
-  - lowercase
-  - giữ/bỏ punctuation có kiểm chứng
-  - stopwords thử nghiệm
-  - stemming/lemmatization nếu cần
-- Tạo vectorizer:
-  - word-level TF-IDF
-  - char-level TF-IDF
-  - word + char combined
-  - n-gram (1,2), (1,3), char 3–5
-- Huấn luyện baseline:
-  - Multinomial Naive Bayes
-  - Logistic Regression
-  - Linear SVM
-- Tuning:
-  - max_features
-  - min_df / max_df
-  - n-gram range
-  - class_weight
+### Mô hình làm việc
 
-**Vai trò phụ**
-- Phối hợp với Member 4 để stacking/blending
+Mỗi người là **1 mini team độc lập** trên **1 branch riêng**, tự chịu trách nhiệm toàn bộ pipeline:
 
-**Deliverables**
-- `notebooks/text_baselines.ipynb`
-- `src/text_pipeline.py`
-- bảng kết quả CV của từng text model
+- đọc dữ liệu
+- EDA nhanh
+- preprocessing
+- feature engineering
+- training
+- validation
+- submission
+- ghi chú approach
 
----
+### Branch gợi ý
 
-### Thành viên 4 — Advanced Modeling + Ensemble + Reporting Support
-**Vai trò chính**
-- Xây mô hình nâng cao
-- Ensemble / stacking / blending
-- Hỗ trợ làm submission cuối
+- `battle/m1-full-pipeline`
+- `battle/m2-full-pipeline`
+- `battle/m3-full-pipeline`
+- `battle/m4-full-pipeline`
 
-**Nhiệm vụ chính**
-- Thử hybrid model:
-  - TF-IDF title + metadata
-  - FeatureUnion / ColumnTransformer
-- Thử tree/boosting nếu hợp lý:
-  - LightGBM / XGBoost / CatBoost
-- Thử pseudo-labeling **nếu và chỉ nếu** CV ổn định
-- Thử ensemble:
-  - soft voting
-  - weighted voting
-  - stacking level-2
-- Phân tích confusion matrix
-- Tổng hợp feature importance / top n-grams / lỗi theo lớp
+### Vai trò thực tế của từng thành viên
 
-**Vai trò phụ**
-- Hỗ trợ dựng slide, bảng so sánh final
+#### Member 1 — Coordinator + Competitor
 
-**Deliverables**
-- `notebooks/hybrid_ensemble.ipynb`
-- `src/ensemble.py`
-- `reports/error_analysis.md`
-- 2–3 final submission files
+- Thiết lập repo, tracker, CV rule, naming rule
+- Đồng thời vẫn tự làm full pipeline trên branch riêng như mọi người
+- Là người tổng hợp kết quả cuối và merge winner vào `main`
+
+#### Member 2 — Competitor
+
+- Tự làm full pipeline branch riêng
+- Có thể thiên về metadata, data cleaning, feature thủ công nếu muốn
+
+#### Member 3 — Competitor
+
+- Tự làm full pipeline branch riêng
+- Có thể thiên về text baseline mạnh, TF-IDF, linear model nếu muốn
+
+#### Member 4 — Competitor
+
+- Tự làm full pipeline branch riêng
+- Có thể thiên về hybrid, ensemble, boosting nếu muốn
+
+### Điểm quan trọng
+
+Từ giờ, **mọi người đều làm full pipeline**, chỉ khác nhau ở chiến lược mạnh của từng người.
 
 ---
 
-## 5) Cách phối hợp giữa 4 thành viên
+## 5) Deliverable bắt buộc của mỗi branch
 
-### Quy tắc chung
-- Mỗi người làm trên **1 branch riêng**
-- Mọi kết quả đều phải ghi vào **bảng experiment chung**
-- Không dùng leaderboard làm tiêu chuẩn duy nhất
-- Quyết định cuối dựa trên:
-  1. CV Macro F1
-  2. độ ổn định qua folds
-  3. tính hợp lý của mô hình
-  4. leaderboard chỉ dùng để tham khảo
+Mỗi branch cần có tối thiểu:
 
-### Bảng log thí nghiệm nên có
-| Run ID | Người phụ trách | Feature set | Model | CV Macro F1 | Std | Public LB | Ghi chú |
-|---|---|---|---|---:|---:|---:|---|
-| exp_001 | M3 | TF-IDF title word(1,2) | Logistic Regression | 0.xxx | 0.xxx | 0.xxx | baseline |
-| exp_002 | M2 | metadata only | CatBoost | 0.xxx | 0.xxx | 0.xxx | venue mạnh |
-| exp_003 | M4 | title + metadata | Linear SVM | 0.xxx | 0.xxx | 0.xxx | hybrid |
+1. Một pipeline chạy được end-to-end
+2. Một notebook hoặc script chính để train/evaluate
+3. Ít nhất một submission Kaggle hợp lệ
+4. Một file note ngắn giải thích approach
+5. Tracker thí nghiệm đã được cập nhật
 
----
+### Gói bàn giao tối thiểu của mỗi thành viên
 
-## 6) Roadmap chi tiết theo giai đoạn
-
-> Có thể triển khai trong **10 ngày**. Nếu nhóm ít thời gian, có thể nén xuống **7 ngày** bằng cách rút bớt tuning và ensemble.
+- `notebook` hoặc `script` chính
+- `best submission`
+- `CV summary`
+- `Public LB`
+- `2-5 ý chính` mô tả approach:
+  - dùng feature gì
+  - model gì
+  - điều gì hiệu quả nhất
+  - điểm yếu còn lại là gì
 
 ---
 
-# Giai đoạn 1 — Khởi động dự án (Ngày 1)
-## Mục tiêu
-- Hiểu dữ liệu
-- Chia việc rõ
-- Dựng khung dự án
+## 6) Chiến lược kỹ thuật gợi ý cho từng người
 
-## Việc cần làm
-### Member 1
-- Tạo repo GitHub / Drive folder
-- Tạo cấu trúc thư mục
-- Tạo template experiment tracker
-- Tạo baseline split bằng `StratifiedKFold`
+Vì đây là mô hình “đấu branch”, cả nhóm không nên copy nhau hoàn toàn. Nên chủ động tách chiến lược để tối đa hóa khả năng tìm ra winner.
 
-### Member 2
-- Chạy EDA ban đầu
-- Kiểm tra missing, duplicate, class balance
+### Hướng A — Text-first
 
-### Member 3
-- Viết notebook baseline đọc data + TF-IDF title
+- `title` làm nguồn tín hiệu chính
+- TF-IDF word / char
+- Logistic Regression / Linear SVM / Naive Bayes
 
-### Member 4
-- Chuẩn bị notebook evaluation + confusion matrix + submit generator
+### Hướng B — Metadata-first
 
-## Deliverables cuối ngày
-- Repo chạy được
-- Cả nhóm đọc được data
-- Có EDA sơ bộ
-- Có kế hoạch branch và naming
+- tập trung `venue`, `year`, `authors`, `doi`
+- parse `author_count`, `doi_prefix`, `title_length`, `year_bucket`
+- Logistic Regression / CatBoost / Random Forest
 
----
+### Hướng C — Hybrid gọn
 
-# Giai đoạn 2 — Data audit & feature hypotheses (Ngày 2)
-## Mục tiêu
-Tìm ra các feature đáng thử trước khi model hóa nặng.
+- TF-IDF `title` + one-hot / numeric metadata
+- `ColumnTransformer`
+- Logistic Regression / Linear SVM
 
-## Việc cần làm
-### Member 2 lead
-- Phân tích:
-  - label vs venue
-  - label vs year
-  - label vs title length
-  - label vs author count
-  - pattern DOI
-- Xem title của từng lớp có từ khóa đặc trưng gì
+### Hướng D — Hybrid mạnh / ensemble
 
-### Member 1 support
-- Kiểm tra duplicate title/doi
-- Xác định có cần deduplicate hay giữ nguyên
+- word TF-IDF + char TF-IDF + metadata
+- weighted voting / soft voting / stacking đơn giản
 
-### Member 3 support
-- Xuất top n-grams theo label
-
-### Member 4 support
-- Chuẩn hóa hàm đánh giá Macro F1
-
-## Deliverables cuối ngày
-- File `eda_summary.md`
-- Danh sách feature hypothesis:
-  - venue có thể predictive
-  - year có thể phản ánh xu hướng
-  - authors/doi có tín hiệu phụ
-  - title là feature chính
+Không bắt buộc mỗi người bám đúng một hướng, nhưng nên khác nhau tương đối để tránh 4 branch na ná nhau.
 
 ---
 
-# Giai đoạn 3 — Baseline nhanh và chắc (Ngày 3–4)
-## Mục tiêu
-Có ít nhất 3 baseline tốt, làm mốc để cải tiến.
+## 7) Roadmap mới theo giai đoạn
 
-## Việc cần làm
-### Member 3 lead
-Chạy các baseline text:
-1. TF-IDF word unigram + Logistic Regression
-2. TF-IDF word (1,2) + Linear SVM
-3. TF-IDF char (3,5) + Logistic Regression
-4. TF-IDF word + char combined
-
-### Member 2 lead song song
-Chạy baseline metadata:
-1. venue + year + author_count
-2. venue + year + doi features
-3. CatBoost / Logistic Regression / Random Forest cho metadata-only
-
-### Member 1
-- Chuẩn hóa cách ghi kết quả CV
-- Kiểm tra fold variance
-- So sánh fairness giữa các run
-
-### Member 4
-- Tạo pipeline feature union
-- Chuẩn bị hybrid baseline
-
-## Deliverables cuối ngày 4
-- Bảng so sánh baseline đầy đủ
-- Chọn ra:
-  - best text-only
-  - best metadata-only
-  - 1 candidate hybrid
+> Có thể triển khai trong **7–10 ngày**. Kế hoạch này phù hợp với mô hình “4 người, 4 branch, chọn winner”.
 
 ---
 
-# Giai đoạn 4 — Hybrid modeling & tuning (Ngày 5–6)
-## Mục tiêu
-Đẩy điểm số bằng cách kết hợp feature và tuning có kiểm soát.
+### Giai đoạn 1 — Khóa luật chơi chung (Ngày 1)
 
-## Việc cần làm
-### Member 4 lead
-- Kết hợp:
-  - TF-IDF title + OneHot venue + numeric year + author_count + doi stats
-- Thử:
-  - Logistic Regression
-  - Linear SVM
-  - LightGBM/CatBoost trên feature phù hợp
-- Tuning:
-  - regularization
-  - class_weight
-  - max_features
-  - ngram_range
+**Mục tiêu**
 
-### Member 3
-- Tuning vectorizer:
-  - min_df
-  - max_df
-  - analyzer
-  - sublinear_tf
-- So sánh word vs char vs word+char
+- Repo có cấu trúc ổn
+- Cả nhóm dùng cùng data path, CV rule, tracker
+- Tạo branch riêng cho từng người
 
-### Member 2
-- Thêm feature:
-  - first author frequency
-  - authors hash / rare-author indicator
-  - year bucket
-  - DOI prefix category
+**Việc cần làm**
 
-### Member 1
-- Theo dõi xem tuning nào có cải thiện thực sự
-- Loại bỏ run “ảo” do variance cao
+- Chốt `StratifiedKFold + Macro F1`
+- Chốt naming branch, file submit, run id
+- Tạo 4 branch battle
+- Mỗi người pull từ cùng một `main`
 
-## Deliverables cuối ngày 6
-- 2–3 model tốt nhất theo CV
-- Bảng tuning có lý do chọn
+**Deliverable cuối ngày**
+
+- 4 branch đã sẵn sàng
+- Tracker chung hoạt động
+- Cả nhóm hiểu cùng một luật so điểm
 
 ---
 
-# Giai đoạn 5 — Error analysis & class-focused improvement (Ngày 7)
-## Mục tiêu
-Tăng Macro F1 bằng cách tập trung vào lớp khó.
+### Giai đoạn 2 — Baseline full pipeline cho từng người (Ngày 2–3)
 
-## Việc cần làm
-### Member 4 lead
-- Vẽ confusion matrix
-- Xem lớp nào bị nhầm nhiều nhất
-- Tính F1 theo từng lớp
+**Mục tiêu**
 
-### Member 3
-- Trích các title bị đoán sai
-- Xem mô hình text đang nhầm ở đâu:
-  - title quá ngắn
-  - từ khóa chồng lấn giữa lớp
-  - venue áp đảo dự đoán
+Mỗi thành viên phải có **ít nhất 1 pipeline chạy từ đầu đến cuối**.
 
-### Member 2
-- So lại metadata của các mẫu đoán sai
-- Kiểm tra missing authors có làm model lệch không
+**Việc cần làm**
 
-### Member 1
-- Tổ chức họp nhóm 30–45 phút chốt hướng cải thiện cuối
+- Đọc train/test
+- Chạy EDA nhanh
+- Tạo baseline đầu tiên
+- Tính CV
+- Sinh submission đầu tiên
 
-## Deliverables cuối ngày
-- `error_analysis.md`
-- Danh sách hành động:
-  - tăng trọng số lớp nào?
-  - dùng ensemble không?
-  - loại feature nào gây nhiễu?
+**Deliverable cuối giai đoạn**
+
+- 4 baseline branch độc lập
+- Mỗi người có ít nhất 1 submission hợp lệ
+- Tracker đã có các run đầu tiên
 
 ---
 
-# Giai đoạn 6 — Ensemble & final submission (Ngày 8–9)
-## Mục tiêu
-Tạo submission cuối đủ mạnh và ổn định.
+### Giai đoạn 3 — Tối ưu độc lập trên từng branch (Ngày 4–6)
 
-## Việc cần làm
-### Member 4 lead
-- Ensemble 2–4 model tốt nhất:
-  - soft voting
-  - weighted voting
-  - stacking đơn giản
-- So sánh CV trước/sau ensemble
+**Mục tiêu**
 
-### Member 1
-- Chọn final candidates để submit
-- Quản lý version submission:
-  - `sub_v1_baseline.csv`
-  - `sub_v2_hybrid.csv`
-  - `sub_v3_ensemble.csv`
+Mỗi người cải tiến branch của mình theo triết lý riêng.
 
-### Member 3
-- Kiểm tra consistency pipeline train/test
-- Tránh mismatch vocabulary
+**Các hướng nên thử**
 
-### Member 2
-- Kiểm tra format file submit
-- Audit lại missing / encoding / id mapping
+- tuning TF-IDF
+- thêm char n-gram
+- thêm metadata features
+- hybrid pipeline
+- class weight
+- CatBoost / LightGBM / XGBoost
+- voting hoặc ensemble nhẹ
 
-## Deliverables cuối ngày 9
-- 2–3 submission cuối
-- Bảng lý do chọn final submission
-- File final dùng để nộp Kaggle
+**Deliverable cuối giai đoạn**
+
+- mỗi người có 2–5 run đáng chú ý
+- mỗi người có best local model tạm thời
+- có ít nhất 1 insight rõ ràng về branch của mình
 
 ---
 
-# Giai đoạn 7 — Báo cáo & thuyết trình (Ngày 10)
-## Mục tiêu
-Biến quá trình làm thành câu chuyện chặt chẽ, thuyết phục.
+### Giai đoạn 4 — Checkpoint giữa kỳ (Ngày 6 hoặc 7)
 
-## Việc cần làm
-### Member 1 lead
-- Dàn khung báo cáo
-- Phân công ai nói phần nào
+**Mục tiêu**
 
-### Member 2
-- Viết phần dataset understanding + EDA + metadata features
+So nhanh kết quả để biết branch nào đang dẫn đầu.
 
-### Member 3
-- Viết phần text representation + baseline + tuning
+**Nội dung họp**
 
-### Member 4
-- Viết phần hybrid model + ensemble + error analysis + final result
+- mỗi người trình bày:
+  - best CV
+  - best Public LB
+  - feature/model đang hiệu quả nhất
+  - hướng định cải tiến tiếp
 
-## Cấu trúc báo cáo gợi ý
-1. Giới thiệu bài toán
-2. Mô tả dữ liệu
-3. EDA và insight
-4. Tiền xử lý
-5. Feature engineering
-6. Mô hình thử nghiệm
-7. Validation strategy
-8. Kết quả
-9. Error analysis
-10. Kết luận và hướng cải thiện
+**Lưu ý**
 
-## Deliverables cuối cùng
-- Báo cáo hoàn chỉnh
-- Slide
-- Notebook sạch
-- Final submission
-- Repo có thể chạy lại
+- Không merge branch ở bước này
+- Chỉ dùng checkpoint để định hướng sprint cuối
 
 ---
 
-## 7) Backlog kỹ thuật chi tiết cần ưu tiên
+### Giai đoạn 5 — Sprint cuối để đẩy điểm (Ngày 7–8)
 
-### Mức ưu tiên cao (phải làm)
-- [ ] StratifiedKFold + Macro F1 scorer
-- [ ] TF-IDF word-level baseline
-- [ ] TF-IDF char-level baseline
-- [ ] Metadata features cơ bản
-- [ ] Hybrid model
-- [ ] Confusion matrix
-- [ ] File submit đúng format
+**Mục tiêu**
 
-### Mức ưu tiên trung bình (nên làm)
-- [ ] DOI parsing
-- [ ] author_count, rare_author features
-- [ ] class_weight tuning
-- [ ] weighted voting ensemble
-- [ ] calibration hoặc threshold check nếu cần
+Mỗi người tập trung đẩy branch của mình lên mức tốt nhất.
 
-### Mức ưu tiên nâng cao (chỉ làm khi đã ổn)
+**Việc nên làm**
+
+- sửa lỗi pipeline
+- kiểm tra overfit
+- làm error analysis nhanh
+- thử 1–2 cải tiến cuối cùng có chủ đích
+- tạo final candidate submission của từng người
+
+**Deliverable cuối giai đoạn**
+
+- 4 final candidate branch
+- mỗi người có 1 submission tự tin nhất
+
+---
+
+### Giai đoạn 6 — Chọn winner branch (Ngày 9)
+
+**Mục tiêu**
+
+Chọn branch mạnh nhất làm bài chính.
+
+**Cách chọn**
+
+1. So `Public Kaggle score`
+2. Nếu điểm sát nhau:
+   - xem thêm `CV mean/std`
+   - xem pipeline có sạch và tái tạo được không
+   - xem branch nào dễ trình bày hơn trong báo cáo
+
+**Kết quả cần có**
+
+- chốt 1 branch thắng
+- chốt 1 nhánh backup nếu cần
+
+---
+
+### Giai đoạn 7 — Hợp nhất và làm báo cáo (Ngày 10)
+
+**Mục tiêu**
+
+Biến branch thắng thành phiên bản nộp chính thức của nhóm.
+
+**Việc cần làm**
+
+- merge hoặc cherry-pick pipeline winner vào `main`
+- chuẩn hóa README/notebook/report cho hướng thắng
+- báo cáo không chỉ nói pipeline thắng, mà còn so sánh 4 hướng đã thử
+
+**Deliverable cuối cùng**
+
+- final submission
+- repo sạch, chạy lại được
+- báo cáo giải thích vì sao branch thắng được chọn
+- slide có phần so sánh ngắn giữa 4 hướng
+
+---
+
+## 8) Template so sánh branch cuối cùng
+
+| Member | Branch | Hướng tiếp cận | Best CV Macro F1 | Std | Best Public LB | Trạng thái |
+|---|---|---|---:|---:|---:|---|
+| M1 | `battle/m1-full-pipeline` | hybrid | 0.xxx | 0.xxx | 0.xxx | contender |
+| M2 | `battle/m2-full-pipeline` | metadata-heavy | 0.xxx | 0.xxx | 0.xxx | contender |
+| M3 | `battle/m3-full-pipeline` | text-first | 0.xxx | 0.xxx | 0.xxx | contender |
+| M4 | `battle/m4-full-pipeline` | ensemble | 0.xxx | 0.xxx | 0.xxx | contender |
+
+---
+
+## 9) Backlog kỹ thuật ưu tiên cho mọi branch
+
+### Bắt buộc
+
+- [ ] Pipeline đọc data/train/predict end-to-end
+- [ ] `StratifiedKFold + Macro F1`
+- [ ] Ít nhất 1 text baseline
+- [ ] Ít nhất 1 submission hợp lệ
+- [ ] Ghi log thí nghiệm đầy đủ
+
+### Nên làm
+
+- [ ] char-level TF-IDF
+- [ ] metadata features cơ bản
+- [ ] hybrid text + metadata
+- [ ] confusion matrix
+- [ ] error analysis ngắn
+
+### Chỉ làm nếu còn thời gian
+
+- [ ] weighted voting
+- [ ] stacking
 - [ ] pseudo-labeling
-- [ ] stacking level-2
-- [ ] pretrained text embedding
-- [ ] sentence transformer cho title
-- [ ] domain keyword lexicon feature
-
----
-
-## 8) Đề xuất pipeline mô hình theo thứ tự thử nghiệm
-
-### Baseline 1
-- Input: `title`
-- Feature: TF-IDF word unigram/bigram
-- Model: Logistic Regression
-- Mục tiêu: baseline ổn định, nhanh
-
-### Baseline 2
-- Input: `title`
-- Feature: TF-IDF char 3–5 grams
-- Model: Linear SVM
-- Mục tiêu: bắt pattern từ thuật ngữ học thuật, acronym, tên phương pháp
-
-### Baseline 3
-- Input: `venue`, `year`, `authors`, `doi`
-- Feature: one-hot + numeric + handcrafted
-- Model: CatBoost / Logistic Regression
-- Mục tiêu: đo tín hiệu từ metadata
-
-### Strong candidate 1
-- Input: title + metadata
-- Feature: ColumnTransformer (TF-IDF + OneHot + numeric)
-- Model: Linear SVM / Logistic Regression
-
-### Strong candidate 2
-- Input: title + metadata
-- Feature: word TF-IDF + char TF-IDF + metadata
-- Model: ensemble
-
-### Final candidate
-- Blend:
-  - best text-only
-  - best hybrid
-  - best metadata-augmented model
-
----
-
-## 9) Chuẩn kỹ thuật bắt buộc để tránh mất điểm oan
-
-- Luôn fix `random_state`
-- Luôn dùng cùng một CV split để so sánh model
-- Không nhìn leaderboard quá nhiều để tránh overfit public LB
-- Không đưa `Label` hay biến rò rỉ vào feature
-- Khi join feature train/test phải đảm bảo cột khớp
-- Kiểm tra submit:
-  - đúng số dòng
-  - đúng thứ tự `id`
-  - cột tên chính xác: `id,Label`
-- Ghi lại mọi thí nghiệm vào bảng log
-- Notebook final phải chạy từ đầu đến cuối
+- [ ] pretrained embeddings
 
 ---
 
 ## 10) Rủi ro chính và cách xử lý
 
-### Rủi ro 1: Dataset nhỏ → kết quả dao động
+### Rủi ro 1: 4 người làm giống hệt nhau
+
 **Cách xử lý**
-- Dùng Stratified K-Fold
-- Báo cáo mean + std
-- Không kết luận chỉ từ 1 split
 
-### Rủi ro 2: Overfit leaderboard
+- mỗi người chọn một “trục mạnh” khác nhau
+- chia hướng từ đầu: text-first, metadata-first, hybrid, ensemble
+
+### Rủi ro 2: Quá phụ thuộc Public LB
+
 **Cách xử lý**
-- Chọn model theo CV
-- Chỉ submit các candidate thực sự khác nhau
 
-### Rủi ro 3: Chồng chéo công việc nhóm
+- vẫn phải log CV
+- nếu leaderboard chênh rất ít, dùng thêm CV và reproducibility để chốt
+
+### Rủi ro 3: Branch thắng nhưng khó merge
+
 **Cách xử lý**
-- Mỗi người có deliverable rõ
-- Có experiment sheet chung
-- Họp ngắn mỗi ngày 10–15 phút
 
-### Rủi ro 4: Code không ghép được
+- mỗi branch phải giữ notebook/script chạy được
+- hạn chế sửa lung tung ngoài scope pipeline của mình
+
+### Rủi ro 4: Không ai có pipeline hoàn chỉnh
+
 **Cách xử lý**
-- Thống nhất path, naming, environment từ ngày đầu
-- Dùng `requirements.txt`
 
-### Rủi ro 5: Metadata gây nhiễu
-**Cách xử lý**
-- Luôn so sánh với text-only baseline
-- Chỉ giữ feature nào cải thiện CV
+- bắt buộc có baseline end-to-end từ rất sớm
+- không được chỉ dừng ở EDA hoặc thử từng phần rời rạc
 
 ---
 
-## 11) Lịch họp nhóm đề xuất
+## 11) Definition of Done theo chiến lược mới
 
-### Họp 1 — Kickoff (Ngày 1)
-- Chốt vai trò
-- Chốt cấu trúc repo
-- Chốt metric + validation
+Nhóm được xem là hoàn thành tốt nếu:
 
-### Họp 2 — Sau baseline (Ngày 4)
-- Xem baseline nào mạnh
-- Quyết định hướng tuning
-
-### Họp 3 — Sau error analysis (Ngày 7)
-- Chốt final model strategy
-- Chia việc làm báo cáo
-
-### Họp 4 — Trước khi nộp (Ngày 10)
-- Review submit
-- Review slide/báo cáo
-- Kiểm tra lần cuối format
+- [ ] cả 4 branch đều có pipeline chạy được
+- [ ] cả 4 branch đều có ít nhất 1 submission Kaggle
+- [ ] có bảng so sánh đầy đủ giữa các branch
+- [ ] chọn được 1 winner branch bằng tiêu chí rõ ràng
+- [ ] merge được winner vào `main`
+- [ ] có báo cáo giải thích vì sao winner tốt hơn các hướng còn lại
 
 ---
 
-## 12) Cấu trúc thư mục đề xuất
+## 12) Kết luận chiến lược ngắn gọn
 
-```text
-project/
-│
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── submissions/
-│
-├── notebooks/
-│   ├── 01_eda.ipynb
-│   ├── 02_text_baseline.ipynb
-│   ├── 03_metadata_features.ipynb
-│   ├── 04_hybrid_models.ipynb
-│   └── 05_ensemble_error_analysis.ipynb
-│
-├── src/
-│   ├── utils.py
-│   ├── metrics.py
-│   ├── preprocess.py
-│   ├── features_metadata.py
-│   ├── text_pipeline.py
-│   └── ensemble.py
-│
-├── reports/
-│   ├── eda_summary.md
-│   ├── error_analysis.md
-│   └── final_report.md
-│
-├── configs/
-│   └── experiment_config.yaml
-│
-├── requirements.txt
-└── README.md
-```
+Với dataset nhỏ và codebase còn ít, hướng làm hiệu quả hơn lúc này không phải là chia cứng theo module, mà là:
 
----
+1. **Khóa luật chơi chung**
+2. **Cho mỗi người tự làm full pipeline trên branch riêng**
+3. **So điểm Kaggle công bằng**
+4. **Chọn winner branch làm bài chính**
+5. **Dùng các branch còn lại như phần so sánh trong báo cáo**
 
-## 13) Definition of Done
-
-Nhóm được xem là hoàn thành tốt nếu đạt đủ các điều kiện sau:
-
-- [ ] Có EDA và insight rõ ràng
-- [ ] Có ít nhất 3 baseline được so sánh công bằng
-- [ ] Có validation chuẩn bằng Macro F1
-- [ ] Có ít nhất 1 mô hình hybrid
-- [ ] Có error analysis theo lớp
-- [ ] Có ensemble hoặc lý do rõ vì sao không ensemble
-- [ ] Có submission cuối đúng format
-- [ ] Có báo cáo giải thích logic, không chỉ đưa điểm số
-
----
-
-## 14) Kết luận chiến lược ngắn gọn
-
-Để đạt kết quả tốt nhất, nhóm nên đi theo hướng:
-
-1. **Làm chắc validation**
-2. **Xây baseline text thật mạnh**
-3. **Khai thác metadata thông minh nhưng không lạm dụng**
-4. **Dùng hybrid model**
-5. **Phân tích lỗi để cải thiện Macro F1**
-6. **Dùng ensemble ở giai đoạn cuối**
-7. **Ghi log đầy đủ để báo cáo/thuyết trình thuyết phục**
-
----
-
-## 15) Phân công ngắn gọn để bắt đầu ngay hôm nay
-
-### Member 1
-- Setup repo, CV strategy, experiment tracker, merge kết quả
-
-### Member 2
-- EDA, data cleaning, metadata features, insight report
-
-### Member 3
-- TF-IDF + text baselines + tuning
-
-### Member 4
-- Hybrid models, ensemble, error analysis, final submission support
-
----
-
-**Khuyến nghị cuối:**  
-Nếu thời gian có hạn, hãy ưu tiên theo thứ tự:
-1. text baseline  
-2. hybrid text + metadata  
-3. error analysis  
-4. ensemble  
-5. báo cáo sạch và có lý do rõ ràng  
-
-Với dataset nhỏ như stage 1, một pipeline **TF-IDF tốt + Linear model tốt + metadata vừa đủ + ensemble gọn** thường sẽ là hướng có tỷ lệ hiệu quả / công sức rất cao.
+Đây là cách vừa nhanh, vừa tạo cạnh tranh tích cực, vừa giúp nhóm tìm ra hướng mạnh nhất trước khi khóa bài nộp cuối.
