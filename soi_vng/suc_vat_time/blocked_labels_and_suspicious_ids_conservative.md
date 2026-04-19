@@ -5,26 +5,29 @@ This replaces the earlier overconfident interpretation. With public F1 around `0
 ## Counts
 
 - Total IDs: `86`
-- Locked direct/leaderboard validated: `3`
-- Needs review total: `83`
-- Consensus candidates but not locked: `73`
+- Locked direct/user validated: `6`
+- Locked by leaderboard validation: `3`
+- Locked by user-verified duplicate DOI group: `3`
+- Needs review total: `80`
+- Consensus candidates but not locked: `70`
 - Disagreement suspicious: `10`
 
 ## Locked Labels
 
-| id | title | final_label | label_s8 | label_s2 | label_s9 | label_abs | reason |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 17 | asymptoticplp: Approximating probabilistic logic programs on large domains. | 2 | 2 | 4 | 4 | 4 | direct_ablation: reverting 4->2 improved score |
-| 26 | Research Report on Automatic Synthesis of Local Search Neighborhood Operators. | 5 | 1 | 5 | 1 | 5 | direct_leaderboard_inference: keep id26=5 after id17/id260 errors were isolated |
-| 260 | A Semantics For Probabilistic Answer Set Programs With Incomplete Stochastic Knowledge. | 5 | 5 | 4 | 4 | 4 | direct_ablation: reverting 4->5 improved score strongly |
+| id | title | final_label | label_s8 | label_s2 | label_s9 | label_abs | review_status | reason |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 7 | Integrating SMT solvers into Goal-Directed Answer Set Programming, Challenges and Directions. | 5 | 5 | 5 | 5 | 5 | locked_user_verified_duplicate_doi | user_verified_duplicate_doi_group: DOI 10.1017/s1471068414000118 manually verified; keep label 5. |
+| 17 | asymptoticplp: Approximating probabilistic logic programs on large domains. | 2 | 2 | 4 | 4 | 4 | locked_directly_validated | direct_ablation: reverting 4->2 improved score |
+| 21 | Unmanned Aerial Vehicle Compliance Checking using Goal-Directed Answer Set Programming. | 5 | 5 | 5 | 5 | 5 | locked_user_verified_duplicate_doi | user_verified_duplicate_doi_group: DOI 10.1017/s1471068414000118 manually verified; keep label 5. |
+| 26 | Research Report on Automatic Synthesis of Local Search Neighborhood Operators. | 5 | 1 | 5 | 1 | 5 | locked_directly_validated | direct_leaderboard_inference: keep id26=5 after id17/id260 errors were isolated |
+| 242 | Solving B Constraints with Goal-directed Answer Set Programming. | 5 | 5 | 5 | 5 | 5 | locked_user_verified_duplicate_doi | user_verified_duplicate_doi_group: DOI 10.1017/s1471068414000118 manually verified; keep label 5. |
+| 260 | A Semantics For Probabilistic Answer Set Programs With Incomplete Stochastic Knowledge. | 5 | 5 | 4 | 4 | 4 | locked_directly_validated | direct_ablation: reverting 4->5 improved score strongly |
 
 ## Needs Review
 
 | id | title | final_label | label_s8 | label_s2 | label_s9 | label_abs | review_status | reason |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | Finite Axiomatizability by Disjunctive Existential Rules. | 1 | 1 | 1 | 1 | 5 | consensus_candidate_top_models_agree | Top/reference submissions agree, but this is not locked because consensus may still be wrong. |
-| 7 | Integrating SMT solvers into Goal-Directed Answer Set Programming, Challenges and Directions. | 5 | 5 | 5 | 5 | 5 | consensus_candidate_all_models_agree | All checked submissions agree, but this is not locked because public F1 is low. |
-| 21 | Unmanned Aerial Vehicle Compliance Checking using Goal-Directed Answer Set Programming. | 5 | 5 | 5 | 5 | 5 | consensus_candidate_all_models_agree | All checked submissions agree, but this is not locked because public F1 is low. |
 | 22 | Past-present temporal programs over finite traces: a preliminary report. | 3 | 3 | 3 | 1 | 1 | suspicious_disagreement | Submissions disagree. |
 | 35 | On the Suitability of Inconsistency Measures. | 2 | 2 | 2 | 2 | 2 | consensus_candidate_all_models_agree | All checked submissions agree, but this is not locked because public F1 is low. |
 | 45 | Speeding up Lazy-Grounding Answer Set Solving. | 4 | 4 | 4 | 4 | 1 | consensus_candidate_top_models_agree | Top/reference submissions agree, but this is not locked because consensus may still be wrong. |
@@ -61,7 +64,6 @@ This replaces the earlier overconfident interpretation. With public F1 around `0
 | 219 | Weighted Conditional EL⊥ Knowledge Bases with Integer Weights: an ASP Approach. | 4 | 4 | 4 | 4 | 4 | consensus_candidate_all_models_agree | All checked submissions agree, but this is not locked because public F1 is low. |
 | 221 | Achieving High Quality Knowledge Acquisition using Controlled Natural Language. | 4 | 4 | 4 | 4 | 4 | consensus_candidate_all_models_agree | All checked submissions agree, but this is not locked because public F1 is low. |
 | 226 | On the impact of sensors update in declarative AI for videogames. | 1 | 1 | 1 | 1 | 1 | consensus_candidate_all_models_agree | All checked submissions agree, but this is not locked because public F1 is low. |
-| 242 | Solving B Constraints with Goal-directed Answer Set Programming. | 5 | 5 | 5 | 5 | 5 | consensus_candidate_all_models_agree | All checked submissions agree, but this is not locked because public F1 is low. |
 | 255 | Reasoning in Highly Reactive Environments. | 4 | 4 | 3 | 2 | 2 | suspicious_disagreement | Submissions disagree. |
 | 256 | ASP and PDDL+ Applications in Urban Traffic Distribution and Control. | 4 | 4 | 4 | 4 | 1 | consensus_candidate_top_models_agree | Top/reference submissions agree, but this is not locked because consensus may still be wrong. |
 | 262 | Efficient OWL2QL Meta-reasoning Using ASP-based Hybrid Knowledge Bases. | 3 | 3 | 3 | 3 | 3 | consensus_candidate_all_models_agree | All checked submissions agree, but this is not locked because public F1 is low. |
