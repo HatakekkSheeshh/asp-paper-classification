@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SOI_DIR = Path(__file__).resolve().parent
 
-train_path = SOI_DIR / "Stage_1_publcitrain_with_abstract_only (1).csv"
+train_path = SOI_DIR / "Stage_1_publcitrain_final_clean.csv"
 test_path = ROOT_DIR / "dataset_stage1" / "test_with_abstract.csv"
 output_dir = SOI_DIR / "best_038_with_abstract_outputs"
 output_dir.mkdir(parents=True, exist_ok=True)
